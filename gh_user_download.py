@@ -8,8 +8,11 @@
 
 """\
 Usage:
-  gh_user_download <who> <where>
+  gh_user_download [-s] <who> <where>
   gh_user_download -h | --help
+
+Options:
+  -s, --ssh  Checks out via ssh
 """
 
 from __future__ import print_function
@@ -21,19 +24,24 @@ from docopt import docopt
 
 
 def main():
-    arguments = docopt(__doc__, version="testing")
+    arguments = docopt(__doc__, version="1.0")
 
     who = arguments['<who>']
     where = arguments['<where>']
+    ssh = arguments['--ssh']
 
     gh = Github()
 
     repos = gh.repos.list(who).all()
 
     for repo in repos:
-        url = repo.git_url
-        print(url, 'to', os.path.join(where, repo.name))
-        os.system('git clone ' + url + ' ' + os.path.join(where, repo.name))
+        if ssh:
+            url = 'git@github.com:' + who + '/' + repo.name
+        else:
+            url = repo.git_url
+        path = os.path.join(where, repo.name)
+        print(url, 'to', path)
+        os.system('git clone ' + url + ' ' + path)
 
 
 if __name__ == '__main__':
